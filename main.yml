@@ -1,0 +1,18 @@
+---
+- name: Set up cluster-wide configuration.
+  hosts: cluster
+  become: true
+
+  tasks: []
+
+- name: Configure the control plane (node 1).
+  hosts: control_plane
+  gather_facts: false
+
+  tasks: []
+
+- name: Configure the nodes (nodes 2-4).
+  hosts: nodes
+  gather_facts: false
+
+  tasks: []

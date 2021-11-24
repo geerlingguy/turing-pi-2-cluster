@@ -1,0 +1,130 @@
+---
+# Automated setup of distributed Linpack benchmark on a Raspberry Pi cluster.
+#
+# Inspired by: https://mikejmcfarlane.github.io/blog/2020/09/17/High-Performance-Linpack-for-raspberry-pi-supercomputer
+# See also: https://www.sci-pi.org.uk/bench/linpack.html
+
+- name: Install linpack benchmark.
+  hosts: cluster
+  become: false
+
+  tasks:
+    - name: Install dependencies.
+      ansible.builtin.apt:
+        name:
+          - gfortran
+          - automake
+        state: present
+      become: true
+
+    - name: Create required temporary directories.
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - /home/pi/tmp
+        - /home/pi/tmp/atlas-build
+
+    # TODO DELETEME
+    - name: Create 'COMPILE_MPI_COMPLETE' file.
+      file:
+        path: /home/pi/tmp/COMPILE_MPI_COMPLETE
+        state: touch
+        mode: 0644
+
+    - name: Download MPI (Message Passing Interface).
+      ansible.builtin.unarchive:
+        src: https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz
+        dest: /home/pi/tmp
+        remote_src: true
+        creates: /home/pi/tmp/mpich-3.4.2/README
+
+    - name: Build MPI (takes a while).
+      ansible.builtin.command: "{{ item }}"
+      args:
+        chdir: /home/pi/tmp/mpich-3.4.2
+        creates: /home/pi/tmp/COMPILE_MPI_COMPLETE
+      loop:
+        - ./configure --with-device=ch3:sock FFLAGS=-fallow-argument-mismatch
+        - make -j4
+
+    - name: Install MPI.
+      ansible.builtin.command: make install
+      args:
+        chdir: /home/pi/tmp/mpich-3.4.2
+        creates: /home/pi/tmp/COMPILE_MPI_COMPLETE
+      become: true
+
+    - name: Create 'COMPILE_MPI_COMPLETE' file.
+      file:
+        path: /home/pi/tmp/COMPILE_MPI_COMPLETE
+        state: touch
+        mode: 0644
+
+    # Note: There was no simpler way to do this besides `shell`.
+    - name: Ensure CPU scaling is set to 'performance'.
+      ansible.builtin.shell: >-
+        echo performance | sudo tee /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+    - name: Download ATLAS linear algebra library.
+      ansible.builtin.unarchive:
+        src: https://sourceforge.net/projects/math-atlas/files/Stable/3.10.3/atlas3.10.3.tar.bz2
+        dest: /home/pi/tmp
+        remote_src: true
+        creates: /home/pi/tmp/ATLAS/README
+
+    - name: Install ATLAS (takes a LONG time).
+      ansible.builtin.command: "{{ item }}"
+      args:
+        chdir: /home/pi/tmp/atlas-build
+        creates: /home/pi/tmp/COMPILE_ATLAS_COMPLETE
+      loop:
+        - ../ATLAS/configure
+        - make
+
+    - name: Create 'COMPILE_MPI_COMPLETE' file.
+      file:
+        path: /home/pi/tmp/COMPILE_ATLAS_COMPLETE
+        state: touch
+        mode: 0644
+
+    - name: Download HPL (High Performance Linpack).
+      ansible.builtin.unarchive:
+        src: http://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
+        dest: /home/pi/tmp
+        remote_src: true
+        creates: /home/pi/tmp/hpl-2.3/README
+
+    - name: Set up HPL makefile.
+      ansible.builtin.shell: sh make_generic
+      args:
+        chdir: /home/pi/tmp/hpl-2.3/setup
+        creates: /home/pi/tmp/COMPILE_HPL_COMPLETE
+
+    - name: Copy rpi makefile into place.
+      ansible.builtin.copy:
+        src: files/benchmark-Make.rpi
+        dest: /home/pi/tmp/hpl-2.3/Make.rpi
+        mode: 0644
+
+    - name: Install HPL.
+      ansible.builtin.command: >-
+        make arch=rpi
+      args:
+        chdir: /home/pi/tmp/hpl-2.3
+        creates: /home/pi/tmp/COMPILE_HPL_COMPLETE
+
+    - name: Create 'build complete' file.
+      file:
+        path: /home/pi/tmp/COMPILE_HPL_COMPLETE
+        state: touch
+        mode: 0644
+
+    - name: Generate an OpenSSH keypair.
+      community.crypto.openssh_keypair:
+        path: /home/pi/.ssh/id_rsa
+        size: 2048
+
+    # TODO: Grab all four node pubkeys and copy them local.
+    # TODO: Put all four pubkeys into authorized_keys on each of the nodes.
