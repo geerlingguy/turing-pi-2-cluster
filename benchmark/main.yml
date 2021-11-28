@@ -120,6 +120,9 @@
   become: false
   tags: ['ssh']
 
+  vars:
+    host_ips: []
+
   tasks:
     - name: Generate an OpenSSH keypair.
       community.crypto.openssh_keypair:
@@ -143,19 +146,22 @@
         key: "{{ item }}"
       loop: "{{ combined_ssh_pubkeys }}"
 
+    - name: Generate list of host IP addresses.
+      ansible.builtin.set_fact:
+        host_ips: "{{ host_ips + [ hostvars[item].ansible_default_ipv4.address ] }}"
+      loop: "{{ groups['cluster'] }}"
+
+    - name: Accept hostkeys for each host on each host.
+      ansible.builtin.command: >-
+        ssh pi@{{ item }} -o StrictHostKeyChecking=accept-new date
+      loop: "{{ host_ips }}"
+
 - name: Run linpack benchmark.
   hosts: cluster
   become: false
   tags: ['benchmark']
 
-  vars:
-    ip_addresses: []
-
   tasks:
-    # TODO: Currently the last step is to—from the first node in the inventory—
-    # run `ssh pi@[ip-address] -o StrictHostKeyChecking=accept-new date` against
-    # every other pi in the cluster.
-
     - name: Create a file describing nodes for MPI execution.
       ansible.builtin.template:
         src: templates/mpi-node-config.j2

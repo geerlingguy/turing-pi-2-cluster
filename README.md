@@ -20,6 +20,14 @@ You might also be interested in another Raspberry-Pi cluster I've maintained for
 
 TODO.
 
+### Upgrading the cluster
+
+Run the upgrade playbook:
+
+```
+ansible-playbook upgrade.yml
+```
+
 ### Benchmarking the cluster
 
 See the README file within the `benchmark` folder.

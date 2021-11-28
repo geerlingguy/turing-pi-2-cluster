@@ -1,0 +1,10 @@
+---
+- name: Upgrade everything on the cluster.
+  hosts: cluster
+  become: true
+
+  tasks:
+    - name: Upgrade all software.
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
