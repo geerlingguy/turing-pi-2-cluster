@@ -22,13 +22,7 @@ TODO.
 
 ### Benchmarking the cluster
 
-Run the benchmarking playbook:
-
-```
-ansible-playbook benchmark.yml
-```
-
-TODO.
+See the README file within the `benchmark` folder.
 
 ### Shutting down the cluster
 

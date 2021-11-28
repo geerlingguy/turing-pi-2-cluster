@@ -7,6 +7,7 @@
 - name: Install linpack benchmark.
   hosts: cluster
   become: false
+  tags: ['setup']
 
   tasks:
     - name: Install dependencies.
@@ -25,13 +26,6 @@
       loop:
         - /home/pi/tmp
         - /home/pi/tmp/atlas-build
-
-    # TODO DELETEME
-    - name: Create 'COMPILE_MPI_COMPLETE' file.
-      file:
-        path: /home/pi/tmp/COMPILE_MPI_COMPLETE
-        state: touch
-        mode: 0644
 
     - name: Download MPI (Message Passing Interface).
       ansible.builtin.unarchive:
@@ -116,15 +110,75 @@
         creates: /home/pi/tmp/COMPILE_HPL_COMPLETE
 
     - name: Create 'build complete' file.
-      file:
+      ansible.builtin.file:
         path: /home/pi/tmp/COMPILE_HPL_COMPLETE
         state: touch
         mode: 0644
 
+- name: Configure SSH connections between nodes.
+  hosts: cluster
+  become: false
+  tags: ['ssh']
+
+  tasks:
     - name: Generate an OpenSSH keypair.
       community.crypto.openssh_keypair:
         path: /home/pi/.ssh/id_rsa
         size: 2048
 
-    # TODO: Grab all four node pubkeys and copy them local.
-    # TODO: Put all four pubkeys into authorized_keys on each of the nodes.
+    - name: Read out ssh pubkey from each host.
+      ansible.builtin.command: cat /home/pi/.ssh/id_rsa.pub
+      changed_when: false
+      register: ssh_pubkey
+
+    - name: Combine pubkeys into single list.
+      ansible.builtin.set_fact:
+        combined_ssh_pubkeys: "{{ ansible_play_hosts | map('extract', hostvars, 'ssh_pubkey') | map(attribute='stdout') | list }}"
+      run_once: yes
+
+    - name: Write all pubkeys to each host.
+      ansible.posix.authorized_key:
+        user: pi
+        state: present
+        key: "{{ item }}"
+      loop: "{{ combined_ssh_pubkeys }}"
+
+- name: Run linpack benchmark.
+  hosts: cluster
+  become: false
+  tags: ['benchmark']
+
+  vars:
+    ip_addresses: []
+
+  tasks:
+    # TODO: Currently the last step is to—from the first node in the inventory—
+    # run `ssh pi@[ip-address] -o StrictHostKeyChecking=accept-new date` against
+    # every other pi in the cluster.
+
+    - name: Create a file describing nodes for MPI execution.
+      ansible.builtin.template:
+        src: templates/mpi-node-config.j2
+        dest: /home/pi/tmp/hpl-2.3/bin/rpi/cluster-hosts
+        mode: 0644
+
+    # Generate the template using this website:
+    # https://www.advancedclustering.com/act_kb/tune-hpl-dat-file/
+    - name: Create HPL.dat file.
+      ansible.builtin.template:
+        src: templates/HPL.dat.j2
+        dest: /home/pi/tmp/hpl-2.3/bin/rpi/HPL.dat
+        mode: 0644
+
+    # TODO: See https://github.com/geerlingguy/turing-pi-2-cluster/issues/1
+    - fail:
+
+    - name: Run the benchmark on the cluster.
+      ansible.builtin.command: mpirun -f cluster-hosts ./xhpl
+      args:
+        chdir: /home/pi/tmp/hpl-2.3/bin/rpi
+      register: mpirun_output
+      run_once: true
+
+    - name: Output the results.
+      debug: var=mpirun_output.stdout
