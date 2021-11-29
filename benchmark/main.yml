@@ -176,7 +176,8 @@
         dest: /home/pi/tmp/hpl-2.3/bin/rpi/HPL.dat
         mode: 0644
 
-    # TODO: See https://github.com/geerlingguy/turing-pi-2-cluster/issues/1
+    # TODO: Add all hostnames and IPs to /etc/hosts, otherwise mpirun may hang.
+    # See https://github.com/geerlingguy/turing-pi-2-cluster/issues/1
     - fail:
 
     - name: Run the benchmark on the cluster.
