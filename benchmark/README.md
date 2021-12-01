@@ -6,10 +6,28 @@ I wanted to see where my various Pi clusters would rank, historically, so I buil
 
 ## Usage
 
-Run the benchmarking playbook inside this directory:
+Make sure you have Ansible installed, then run the benchmarking playbook inside this directory:
 
 ```
 ansible-playbook main.yml
 ```
 
-TODO.
+After it's done, you may also need to add all the IP to hostname mappings to each of the nodes' `/etc/hosts` files (otherwise the HPL benchmark may hang).
+
+You should be able to log directly into any of the nodes (I did my tests on node 1), and run the following commands to kick off a benchmarking run:
+
+```
+cd ~/tmp/hpl-2.3/bin/rpi
+mpirun -f cluster-hosts ./xhpl
+```
+
+> The configuration here is optimized for a 4-node Pi CM4 cluster with 8 GB of RAM on each module. Some settings like those in the `HPL.dat` file may need changes for different cluster layouts!
+
+## Results
+
+In my testing on Raspberry Pi OS Bullseye, in November 2021, I got the following results:
+
+| Benchmark | Result | Wattage | Gflops/W |
+| --- | --- | --- | --- |
+| HPL (1.5 GHz default clock) | 44.942 Gflops | 24.5W | 1.83 Gflops/W |
+| HPL (2.0 GHz overclock) | 51.327 Gflops | 33W | 1.54 Gflops/W |
