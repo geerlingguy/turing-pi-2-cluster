@@ -5,14 +5,25 @@
 
   tasks: []
 
+- name: Configure storage node (node 3).
+  hosts: storage
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Set up storage.
+      include_tasks: tasks/storage.yml
+
 - name: Configure the control plane (node 1).
   hosts: control_plane
   gather_facts: false
+  become: true
 
   tasks: []
 
 - name: Configure the nodes (nodes 2-4).
   hosts: nodes
   gather_facts: false
+  become: true
 
   tasks: []

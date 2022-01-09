@@ -1,0 +1,16 @@
+---
+- name: Ensure ZFS prerequisites are installed.
+  apt:
+    name: raspberrypi-kernel-headers
+    state: present
+
+- name: Ensure ZFS is installed.
+  apt:
+    name:
+      - raspberrypi-kernel-headers
+      - zfs-dkms
+      - zfsutils-linux
+    state: present
+
+- name: Configure ZFS mirror.
+  meta: noop
