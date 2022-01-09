@@ -8,17 +8,37 @@ This repository will contain examples and automation used in Turing Pi 2-related
 
 You might also be interested in another Raspberry-Pi cluster I've maintained for years, the [Raspberry Pi Dramble](https://www.pidramble.com), which is a Kubernetes Pi cluster in my basement that hosts [www.pidramble.com](https://www.pidramble.com).
 
+## Storage Configuration
+
+**Warning**: This playbook is configured to set up a ZFS mirror volume on node 3, with two drives connected to the built-in SATA ports on the Turing Pi 2.
+
+To disable this behavior, you can set `storage_configure: false` in `config.yml`.
+
+To make sure the ZFS mirror volume is able to be created, make sure your two SATA drives are wiped first:
+
+```
+pi@turing-node-3:~ $ sudo wipefs --all --force /dev/sda?; sudo wipefs --all --force /dev/sda
+pi@turing-node-3:~ $ sudo wipefs --all --force /dev/sdb?; sudo wipefs --all --force /dev/sdb
+```
+
+If you run `lsblk`, you should see `sda` and `sdb` have no partitions, and are ready to use:
+
+```
+pi@turing-node-3:~ $ lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda           8:0    0  1.8T  0 disk 
+sdb           8:16   0  1.8T  0 disk 
+```
+
 ## Usage
 
   1. Make sure you have [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) installed.
-  3. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `master` and `node`s configured correctly.
-  5. Run the playbook:
+  2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `master` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
+  3. Run the playbook:
 
      ```
      ansible-playbook main.yml
      ```
-
-TODO.
 
 ### Upgrading the cluster
 

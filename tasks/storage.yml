@@ -1,16 +1,21 @@
 ---
 - name: Ensure ZFS prerequisites are installed.
-  apt:
+  ansible.builtin.apt:
     name: raspberrypi-kernel-headers
     state: present
 
 - name: Ensure ZFS is installed.
-  apt:
+  ansible.builtin.apt:
     name:
       - raspberrypi-kernel-headers
       - zfs-dkms
       - zfsutils-linux
     state: present
 
-- name: Configure ZFS mirror.
+- name: Configure ZFS mirror pool.
+  ansible.builtin.command: zpool create zfsdata mirror /dev/sda /dev/sdb
+  args:
+    creates: /zfsdata
+
+- name: Configure permissions for ZFS mirror pool.
   meta: noop

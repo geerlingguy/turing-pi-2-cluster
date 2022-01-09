@@ -1,18 +1,23 @@
 ---
 - name: Set up cluster-wide configuration.
   hosts: cluster
+  gather_facts: false
   become: true
 
   tasks: []
 
 - name: Configure storage node (node 3).
   hosts: storage
-  gather_facts: true
+  gather_facts: false
   become: true
+
+  vars:
+    storage_configure: true
 
   tasks:
     - name: Set up storage.
       include_tasks: tasks/storage.yml
+      when: storage_configure
 
 - name: Configure the control plane (node 1).
   hosts: control_plane
