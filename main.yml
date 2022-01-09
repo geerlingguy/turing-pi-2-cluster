@@ -4,6 +4,9 @@
   gather_facts: false
   become: true
 
+  vars_files:
+    - config.yml
+
   tasks: []
 
 - name: Configure storage node (node 3).
@@ -11,8 +14,8 @@
   gather_facts: false
   become: true
 
-  vars:
-    storage_configure: true
+  vars_files:
+    - config.yml
 
   tasks:
     - name: Set up storage.
@@ -24,11 +27,17 @@
   gather_facts: false
   become: true
 
+  vars_files:
+    - config.yml
+
   tasks: []
 
 - name: Configure the nodes (nodes 2-4).
   hosts: nodes
   gather_facts: false
   become: true
+
+  vars_files:
+    - config.yml
 
   tasks: []

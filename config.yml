@@ -1,2 +1,4 @@
 ---
 storage_configure: true
+storage_pool_name: zfsdata
+storage_nfs_share_name: nfsshare
