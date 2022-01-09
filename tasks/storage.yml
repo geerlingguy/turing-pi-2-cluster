@@ -17,16 +17,17 @@
   args:
     creates: "/{{ storage_pool_name }}"
 
-# TODO:
-#   - Either YOLO 777 the nfs share.
-#   - Or set it to a user/group that will be used for mounting on other nodes.
-- name: Configure permissions for ZFS mirror pool.
-  meta: noop
-
 - name: Ensure NFS filesystem is present in ZFS.
   community.general.zfs:
     name: "{{ storage_pool_name }}/{{ storage_nfs_share_name }}"
     state: present
+
+- name: Configure permissions for ZFS share.
+  ansible.builtin.file:
+    dest: "/{{ storage_pool_name }}/{{ storage_nfs_share_name }}"
+    owner: root
+    group: pi
+    mode: 0777
 
 - name: Check if sharenfs is enabled on ZFS NFS share.
   ansible.builtin.command: "zfs get sharenfs {{ storage_pool_name }}/{{ storage_nfs_share_name }}"
