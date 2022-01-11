@@ -4,15 +4,38 @@
   gather_facts: false
   become: true
 
+  handlers:
+    - name: reboot-pi
+      reboot:
+
   vars_files:
     - config.yml
 
-  tasks: []
+  tasks:
+    - name: Ensure cgroups are configured correctly in cmdline.txt.
+      ansible.builtin.replace:
+        path: /boot/cmdline.txt
+        regexp: '^([\w](?!.*\b{{ item }}\b).*)$'
+        replace: '\1 {{ item }}'
+      with_items:
+        - "cgroup_memory=1"
+        - "cgroup_enable=memory"
+      notify: reboot-pi
+
+    - name: Download K3s install script.
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: "~/k3s_install.sh"
+        mode: a+x
+
 
 - name: Configure storage node (node 3).
   hosts: storage
   gather_facts: false
   become: true
+
+  handlers:
+    - import_tasks: handlers/main.yml
 
   vars_files:
     - config.yml
@@ -22,22 +45,52 @@
       include_tasks: tasks/storage.yml
       when: storage_configure
 
+
 - name: Configure the control plane (node 1).
   hosts: control_plane
   gather_facts: false
   become: true
 
+  handlers:
+    - import_tasks: handlers/main.yml
+
   vars_files:
     - config.yml
 
-  tasks: []
+  tasks:
+    - name: Install K3s on control plane (takes a while).
+      ansible.builtin.shell: >-
+        ~/k3s_install.sh >> ~/k3s_install_log.txt
+      args:
+        chdir: "~"
+        creates: /var/lib/rancher/k3s/server/node-token
+
+    - name: Get node token.
+      ansible.builtin.command: cat /var/lib/rancher/k3s/server/node-token
+      register: node_token_output
+
+    - name: Set node_token fact.
+      ansible.builtin.set_fact:
+        node_token: "{{ node_token_output.stdout_lines[0] }}"
+
 
 - name: Configure the nodes (nodes 2-4).
   hosts: nodes
   gather_facts: false
   become: true
 
+  handlers:
+    - import_tasks: handlers/main.yml
+
   vars_files:
     - config.yml
 
-  tasks: []
+  tasks:
+    - name: Install K3s on nodes (takes a while).
+      ansible.builtin.shell: >-
+        K3S_URL=https://"{{ groups['control_plane'][0] }}":6443
+        K3S_TOKEN="{{ hostvars[groups['control_plane'][0]]['node_token'] }}"
+        ~/k3s_install.sh >> ~/k3s_install_log.txt
+      args:
+        chdir: "~"
+        creates: /var/lib/rancher/k3s/agent/kubelet.kubeconfig

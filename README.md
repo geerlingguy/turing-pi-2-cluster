@@ -33,7 +33,7 @@ sdb           8:16   0  1.8T  0 disk
 ## Usage
 
   1. Make sure you have [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) installed.
-  2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `master` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
+  2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `control_plane` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
   3. Run the playbook:
 
      ```
@@ -54,7 +54,7 @@ See the README file within the `benchmark` folder.
 
 ### Shutting down the cluster
 
-There will be a safe shutdown option provided through the board's controller at some point, but right now the safest way to shut down the cluster is to run the following command:
+The safest way to shut down the cluster is to run the following command:
 
 ```
 ansible all -B 500 -P 0 -a "shutdown now" -b
