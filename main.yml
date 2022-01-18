@@ -34,9 +34,6 @@
   gather_facts: false
   become: true
 
-  handlers:
-    - import_tasks: handlers/main.yml
-
   vars_files:
     - config.yml
 
@@ -50,9 +47,6 @@
   hosts: control_plane
   gather_facts: false
   become: true
-
-  handlers:
-    - import_tasks: handlers/main.yml
 
   vars_files:
     - config.yml
@@ -78,9 +72,6 @@
   hosts: nodes
   gather_facts: false
   become: true
-
-  handlers:
-    - import_tasks: handlers/main.yml
 
   vars_files:
     - config.yml
