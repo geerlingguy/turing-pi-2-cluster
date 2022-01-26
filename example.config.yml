@@ -1,6 +1,9 @@
 ---
 ipv4_subnet_prefix: "10.1.1"
 active_internet_interface: "wlan0"
+reverse_tunnel_enable: false
+reverse_tunnel_vps_username: my-vps-username
+reverse_tunnel_vps_hostname: my-vps-hostname
 
 storage_configure: true
 storage_pool_name: zfsdata
