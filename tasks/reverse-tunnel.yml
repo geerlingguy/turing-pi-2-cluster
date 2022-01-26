@@ -21,7 +21,7 @@
     - name: Configure autossh defaults.
       ansible.builtin.copy:
         dest: /etc/default/autossh
-        contents: |
+        content: |
           AUTOSSH_POLL=60
           AUTOSSH_FIRST_POLL=30
           AUTOSSH_GATETIME=0
@@ -31,7 +31,7 @@
     - name: Create autossh unit file.
       ansible.builtin.copy:
         dest: /lib/systemd/system/autossh.service
-        contents: |
+        content: |
           [Unit]
           Description=autossh
           Wants=network-online.target
