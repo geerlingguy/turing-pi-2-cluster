@@ -1,4 +1,7 @@
 ---
+ipv4_subnet_prefix: "10.1.1"
+active_internet_interface: "wlan0"
+
 storage_configure: true
 storage_pool_name: zfsdata
 storage_nfs_share_name: nfsshare

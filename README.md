@@ -8,13 +8,49 @@ This repository will contain examples and automation used in Turing Pi 2-related
 
 You might also be interested in another Raspberry-Pi cluster I've maintained for years, the [Raspberry Pi Dramble](https://www.pidramble.com), which is a Kubernetes Pi cluster in my basement that hosts [www.pidramble.com](https://www.pidramble.com).
 
-## Storage Configuration
+## Usage
+
+  1. Make sure you have [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) installed.
+  2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `control_plane` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
+  3. Modify the `config.yml` file to your liking.
+
+### Raspberry Pi Setup
+
+I am running Raspberry Pi OS (64-bit, lite) on a set of four Raspberry Pi Compute Module 4s with 8GB of RAM and no built-in eMMC. I am using [32 GB SanDisk Extreme microSD cards](https://amzn.to/3G35QbY) to boot each node.
+
+I flashed Raspberry Pi OS to the Pis using Raspberry Pi Imager.
+
+To make network discovery and integration easier, I edited the advanced configuration in Imager (press Shift + Ctrl + X), and set the following options:
+
+  - Set hostname: `turing-node-1.local` (set to `2` for node 2, `3` for node 3, etc.)
+  - Enable SSH: 'Allow public-key', and paste in my public SSH key(s)
+  - Configure wifi: (ONLY on node 1) enter SSID and password for local WiFi network
+
+After setting all those options, making sure only node 1 has WiFi configured, and the hostname is unique to each node (and matches what is in `hosts.ini`), I inserted the microSD cards into the respective Pis, and booted the cluster.
+
+### SSH connection test
+
+To test the SSH connection from my Ansible controller (my main workstation, where I'm running all the playbooks), I connected to each server individually, and accepted the hostkey:
+
+```
+ssh pi@turing-node-1.local
+```
+
+This ensures Ansible will also be able to connect via SSH in the following steps. You can test Ansible's connection with:
+
+```
+ansible all -m ping
+```
+
+It should respond with a 'SUCCESS' message for each node.
+
+### Storage Configuration
 
 **Warning**: This playbook is configured to set up a ZFS mirror volume on node 3, with two drives connected to the built-in SATA ports on the Turing Pi 2.
 
 To disable this behavior, you can set `storage_configure: false` in `config.yml`.
 
-To make sure the ZFS mirror volume is able to be created, make sure your two SATA drives are wiped first:
+To make sure the ZFS mirror volume is able to be created, log into node 3, and make sure your two SATA drives are wiped:
 
 ```
 pi@turing-node-3:~ $ sudo wipefs --all --force /dev/sda?; sudo wipefs --all --force /dev/sda
@@ -30,15 +66,33 @@ sda           8:0    0  1.8T  0 disk
 sdb           8:16   0  1.8T  0 disk 
 ```
 
-## Usage
+### Static network configuration (optional, but recommended)
 
-  1. Make sure you have [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) installed.
-  2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `control_plane` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
-  3. Run the playbook:
+Because I am using my Turing Pi cluster both on-premise and remote (using a 4G LTE modem connected to the Pi in slot 1), I set it up on its own subnet (10.1.1.x). You can change the subnet that's used via the `ipv4_subnet_prefix` variable in `config.yml`.
 
-     ```
-     ansible-playbook main.yml
-     ```
+To configure the local network for the Turing Pi cluster (this is optional—you can still use the rest of the configuration without a custom local network), run the playbook:
+
+```
+ansible-playbook networking.yml
+```
+
+After running the playbook, until a reboot, the Pis will still be accessible over their former DHCP-assigned IP address. After the nodes are rebooted, you will need to make sure your workstation is connected to an interface using the same subnet as the cluster (e.g. 10.1.1.x).
+
+> Note: After the networking changes are made, since this playbook uses DNS names (e.g. `turing-node-1.local`) instead of IP addresses, your computer will still be able to connect to the nodes directly—assuming your network has IPv6 support. Pinging the nodes on their new IP addresses will _not_ work, however. For better network compatibility, it's recommended you set up a separate network interface on the Ansible controller that's on the same subnet as the Pis in the cluster:
+> 
+> On my Mac, I connected a second network interface and manually configured its IP address as `10.1.1.10`, with subnet mask `255.255.255.0`, and that way I could still access all the nodes via IP address or their hostnames (e.g. `turing-node-2.local`).
+
+Because the cluster subnet needs its own router, node 1 is configured as a router, using `wlan0` as the primary interface for Internet traffic by default. The other nodes get their Internet access through node 1.
+
+TODO: Add more documentation on `active_internet_interface` variable and how to switch to 4G LTE.
+
+### Cluster configuration and K3s installation
+
+Run the playbook:
+
+```
+ansible-playbook main.yml
+```
 
 ### Upgrading the cluster
 
