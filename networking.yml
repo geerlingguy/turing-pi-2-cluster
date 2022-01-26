@@ -35,3 +35,48 @@
       delegate_to: "{{ groups['control_plane'][0] }}"
       run_once: true
       notify: restart dhcpcd
+
+
+- name: Configure node 1 as a router.
+  hosts: control_plane
+  gather_facts: false
+  become: true
+
+  handlers:
+    - name: restart dhcpcd
+      service:
+        name: dhcpcd
+        state: restarted
+
+    - name: persist iptables rules
+      command: netfilter-persistent save
+
+  vars_files:
+    - config.yml
+
+  tasks:
+    - name: Install routing prerequisites.
+      ansible.builtin.apt:
+        name:
+          - netfilter-persistent
+          - iptables-persistent
+        state: present
+
+    - name: Ensure netfilter-persistent is enabled.
+      ansible.builtin.service:
+        name: netfilter-persistent
+        enabled: true
+
+    - name: "Configure iptables for {{ active_internet_interface }} masquerade."
+      ansible.builtin.iptables:
+        table: nat
+        chain: POSTROUTING
+        out_interface: "{{ active_internet_interface }}"
+        jump: MASQUERADE
+      notify: persist iptables rules
+
+    - name: Enable IPv4 forwarding.
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
