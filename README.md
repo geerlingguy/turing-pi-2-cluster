@@ -12,7 +12,7 @@ You might also be interested in another Raspberry-Pi cluster I've maintained for
 
   1. Make sure you have [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) installed.
   2. Copy the `example.hosts.ini` inventory file to `hosts.ini`. Make sure it has the `control_plane` and `node`s configured correctly (for my examples I named my nodes `turing-node[1-4].local`).
-  3. Modify the `config.yml` file to your liking.
+  3. Copy the `example.config.yml` file to `config.yml`, and modify the variables to your liking.
 
 ### Raspberry Pi Setup
 
