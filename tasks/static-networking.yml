@@ -10,6 +10,12 @@
         name: dhcpcd
         state: restarted
 
+    - name: start autossh
+      ansible.builtin.systemd:
+        name: autossh
+        state: started
+      when: reverse_tunnel_enable
+
   vars_files:
     - ../config.yml
 
@@ -36,6 +42,17 @@
           {{ ipv4_subnet_prefix }}.3  turing-node-3.local turing-node-3
           {{ ipv4_subnet_prefix }}.4  turing-node-4.local turing-node-4
 
+    # This is not idempotent.
+    # See: https://github.com/geerlingguy/turing-pi-2-cluster/issues/8
+    - name: Stop autossh if configured prior to setting active gateway.
+      ansible.builtin.systemd:
+        name: autossh
+        state: stopped
+        enabled: true
+      when: reverse_tunnel_enable
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+
     - name: Set active Internet gateway interface on node 1.
       ansible.builtin.blockinfile:
         path: /etc/dhcpcd.conf
@@ -45,4 +62,6 @@
           metric 100
       delegate_to: "{{ groups['control_plane'][0] }}"
       run_once: true
-      notify: restart dhcpcd
+      notify:
+        - restart dhcpcd
+        - start autossh

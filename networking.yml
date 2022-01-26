@@ -1,10 +1,10 @@
 ---
+- name: Configure reverse SSH tunnels for SSH and HTTP on node 1.
+  import_playbook: tasks/reverse-tunnel.yml
+  when: reverse_tunnel_enable
+
 - name: Set up static networking configuration.
   import_playbook: tasks/static-networking.yml
 
 - name: Configure node 1 as a router.
   import_playbook: tasks/router.yml
-
-- name: Configure reverse SSH tunnels for SSH and HTTP on node 1.
-  import_playbook: tasks/reverse-tunnel.yml
-  when: reverse_tunnel_enable

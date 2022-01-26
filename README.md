@@ -84,9 +84,20 @@ After running the playbook, until a reboot, the Pis will still be accessible ove
 
 Because the cluster subnet needs its own router, node 1 is configured as a router, using `wlan0` as the primary interface for Internet traffic by default. The other nodes get their Internet access through node 1.
 
-TODO: Document how to configure VPS and Pi for [reverse ssh tunnel](https://www.jeffgeerling.com/blog/2022/ssh-and-http-raspberry-pi-behind-cg-nat).
+#### Switch between 4G LTE and WiFi (optional)
 
-TODO: Add more documentation on `active_internet_interface` variable and how to switch to 4G LTE.
+The network configuration defaults to an `active_internet_interface` of `wlan0`, meaning node 1 will route all Internet traffic for the cluster through it's WiFi interface.
+
+Assuming you have a [working 4G card in slot 1](https://www.jeffgeerling.com/blog/2022/using-4g-lte-wireless-modems-on-raspberry-pi), you can switch node 1 to route through an alternate interface (e.g. `usb0`):
+
+  1. Set `active_internet_interface: "usb0"` in your `config.yml`
+  2. Run the networking playbook again: `ansible-playbook networking.yml`
+
+You can switch back and forth between interfaces using the steps above.
+
+#### Reverse SSH and HTTP tunnel configuration (optional)
+
+TODO: Document how to configure VPS and Pi for [reverse ssh tunnel](https://www.jeffgeerling.com/blog/2022/ssh-and-http-raspberry-pi-behind-cg-nat). And mention you should then be able to access node 1, at least, via `ssh -p 2222 pi@[my-vps-hostname]` from anywhere. Also note the importance of securing your infrastructure, and that you should probably lock down the configuration more if running this in production.
 
 ### Cluster configuration and K3s installation
 
