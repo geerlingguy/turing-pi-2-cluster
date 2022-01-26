@@ -103,3 +103,10 @@
           domain-needed
           bogus-priv
       notify: restart dnsmasq
+
+    # See: https://github.com/geerlingguy/turing-pi-2-cluster/issues/9
+    - name: Add crontab task to restart dnsmasq.
+      ansible.builtin.cron:
+        name: "restart dnsmasq if not running"
+        minute: "*"
+        job: "/usr/bin/systemctl status dnsmasq || /usr/bin/systemctl restart dnsmasq"
