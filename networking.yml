@@ -22,8 +22,12 @@
           interface eth0
           static ip_address={{ ipv4_subnet_prefix }}.{{ ip_host_octet }}/24
           static routers={{ ipv4_subnet_prefix }}.1
-          static domain_name_servers=1.1.1.1,8.8.8.8
+          static domain_name_servers={{ ipv4_subnet_prefix }}.1
       notify: restart dhcpcd
+
+    # TODO
+    - name: Configure hosts file so nodes can see each other by hostname.
+      meta: noop
 
     - name: Set active Internet gateway interface on node 1.
       ansible.builtin.blockinfile:
@@ -43,13 +47,13 @@
   become: true
 
   handlers:
-    - name: restart dhcpcd
-      service:
-        name: dhcpcd
+    - name: restart dnsmasq
+      ansible.builtin.service:
+        name: dnsmasq
         state: restarted
 
     - name: persist iptables rules
-      command: netfilter-persistent save
+      ansible.builtin.command: netfilter-persistent save
 
   vars_files:
     - config.yml
@@ -58,6 +62,7 @@
     - name: Install routing prerequisites.
       ansible.builtin.apt:
         name:
+          - dnsmasq
           - netfilter-persistent
           - iptables-persistent
         state: present
@@ -65,6 +70,12 @@
     - name: Ensure netfilter-persistent is enabled.
       ansible.builtin.service:
         name: netfilter-persistent
+        enabled: true
+
+    - name: Ensure dnsmasq is running and enabled.
+      ansible.builtin.service:
+        name: dnsmasq
+        state: started
         enabled: true
 
     - name: "Configure iptables for {{ active_internet_interface }} masquerade."
@@ -80,3 +91,15 @@
         name: net.ipv4.ip_forward
         value: '1'
         sysctl_set: yes
+
+    - name: Configure dnsmasq for bridged DNS.
+      ansible.builtin.copy:
+        dest: /etc/dnsmasq.d/bridge.conf
+        content: |
+          interface=eth0
+          bind-interfaces
+          server=1.1.1.1
+          server=1.0.0.1
+          domain-needed
+          bogus-priv
+      notify: restart dnsmasq
