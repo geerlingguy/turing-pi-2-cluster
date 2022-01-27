@@ -12,7 +12,7 @@
   become: true
 
   vars_files:
-    - ../config.yml
+    - ../../config.yml
 
   tasks:
     - name: Install autossh.

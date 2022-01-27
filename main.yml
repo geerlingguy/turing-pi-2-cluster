@@ -113,3 +113,7 @@
 - name: Set up NFS PVCs.
   import_playbook: tasks/kubernetes/nfs.yml
   tags: ['nfs']
+
+- name: Set up Drupal.
+  import_playbook: tasks/kubernetes/drupal.yml
+  tags: ['drupal']

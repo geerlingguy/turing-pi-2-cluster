@@ -34,8 +34,9 @@
   register: sharenfs_status
   changed_when: false
 
+# Note: no_root_squash can be dangerous. Use at your own peril.
 - name: Ensure NFS filesystem is allowed to be shared via NFS.
-  ansible.builtin.command: "zfs set sharenfs='rw=*' {{ storage_pool_name }}/{{ storage_nfs_share_name }}"
+  ansible.builtin.command: "zfs set sharenfs='no_root_squash,rw=*' {{ storage_pool_name }}/{{ storage_nfs_share_name }}"
   when: "'rw' not in sharenfs_status.stdout"
 
 - name: Ensure NFS is installed.

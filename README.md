@@ -99,6 +99,10 @@ You can switch back and forth between interfaces using the steps above.
 
 TODO: Document how to configure VPS and Pi for [reverse ssh tunnel](https://www.jeffgeerling.com/blog/2022/ssh-and-http-raspberry-pi-behind-cg-nat). And mention you should then be able to access node 1, at least, via `ssh -p 2222 pi@[my-vps-hostname]` from anywhere. Also note the importance of securing your infrastructure, and that you should probably lock down the configuration more if running this in production.
 
+> Note: If autossh isn't working, it could be that it didn't exit cleanly, and a tunnel is still reserving the port on the remote VPS. That's often the case if you run `sudo systemctl status autossh` and see messages like `Warning: remote port forwarding failed for listen port 2222`.
+>
+> In that case, log into the remote VPS and run `pgrep ssh | xargs kill` to kill off all active SSH sessions, then `autossh` should pick back up again.
+
 ### Cluster configuration and K3s installation
 
 Run the playbook:
@@ -106,6 +110,12 @@ Run the playbook:
 ```
 ansible-playbook main.yml
 ```
+
+At the end of the playbook, there should be an instance of Drupal running on the cluster. If you log into node 1, you should be able to access it with `curl localhost`. Alternatively, if you have SSH tunnelling configured, you could access `http://[your-vps-ip-or-hostname]:8080/` and you'd see the site.
+
+You can also log into node 1, switch to the root user account (`sudo su`), then use `kubectl` to manage the cluster (e.g. view Drupal pods with `kubectl get pods -n drupal`).
+
+K3s' `kubeconfig` file is located at `/etc/rancher/k3s/k3s.yaml`. If you'd like to manage the cluster from other hosts (or using a tool like Lens), copy the contents of that file, replacing `localhost` with the IP address or hostname of the control plane node, and paste the contents into a file `~/.kube/config`.
 
 ### Upgrading the cluster
 

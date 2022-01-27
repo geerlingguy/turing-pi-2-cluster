@@ -14,7 +14,7 @@
       ansible.builtin.command: netfilter-persistent save
 
   vars_files:
-    - ../config.yml
+    - ../../config.yml
 
   tasks:
     - name: Install routing prerequisites.

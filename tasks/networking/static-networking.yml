@@ -17,7 +17,7 @@
       when: reverse_tunnel_enable
 
   vars_files:
-    - ../config.yml
+    - ../../config.yml
 
   tasks:
     - name: Configure static IP address on each node.
