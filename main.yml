@@ -68,6 +68,25 @@
       ansible.builtin.set_fact:
         node_token: "{{ node_token_output.stdout_lines[0] }}"
 
+    - name: Ensure required dependencies are installed.
+      package:
+        name:
+          - python3-pip
+          - python3-setuptools
+          - build-essential
+          - golang
+          - git
+        state: present
+      become: true
+
+    - name: Ensure required Python libraries are installed.
+      pip:
+        name:
+          - openshift
+          - pyyaml
+        state: present
+      become: true
+
 
 - name: Configure the nodes (nodes 2-4).
   hosts: nodes
@@ -86,3 +105,11 @@
       args:
         chdir: "~"
         creates: /var/lib/rancher/k3s/agent/kubelet.kubeconfig
+
+- name: Set up Helm.
+  import_playbook: tasks/kubernetes/helm.yml
+  tags: ['helm']
+
+- name: Set up NFS PVCs.
+  import_playbook: tasks/kubernetes/nfs.yml
+  tags: ['nfs']
