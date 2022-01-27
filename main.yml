@@ -61,6 +61,7 @@
 
     - name: Get node token.
       ansible.builtin.command: cat /var/lib/rancher/k3s/server/node-token
+      changed_when: false
       register: node_token_output
 
     - name: Set node_token fact.
