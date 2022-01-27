@@ -125,6 +125,18 @@ Run the upgrade playbook:
 ansible-playbook upgrade.yml
 ```
 
+### Monitoring the cluster
+
+Prometheus and Grafana are used for monitoring. Grafana can be accessed via port forwarding (or you could choose to expose it another way).
+
+To access Grafana:
+
+  1. Make sure you set up a valid `~/.kube/config` file (see 'K3s installation' above).
+  1. Run `kubectl port-forward service/cluster-monitoring-grafana :80`
+  1. Grab the port that's output, and browse to `localhost:[port]`, and bingo! Grafana.
+
+The default login is `admin` / `prom-operator`, but you can also get the secret with `kubectl get secret cluster-monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 -D`.
+
 ### Benchmarking the cluster
 
 See the README file within the `benchmark` folder.
@@ -137,11 +149,11 @@ The safest way to shut down the cluster is to run the following command:
 ansible all -B 500 -P 0 -a "shutdown now" -b
 ```
 
-Then after you confirm the nodes are shut down, press the 'STM32_POWER' button to power down all the slots physically. Then you can switch off or disconnect your ATX power supply.
+Then after you confirm the nodes are shut down (with K3s running, it can take a few minutes), press the 'STM32_POWER' button or a power button attached to the front panel connector to power down all the slots physically. Then you can switch off or disconnect your ATX power supply.
 
 ## Caveats
 
-The Turing Pi 2 I'm using is a prototype, pre-production version of the board. Some of the things here may work well on mine but need changes to work on your own, once you have one.
+The Turing Pi 2 I'm using is a prototype, pre-production version of the board. If you have a production board, YMMV. You've been warned!
 
 ## Author
 
