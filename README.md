@@ -97,11 +97,27 @@ You can switch back and forth between interfaces using the steps above.
 
 #### Reverse SSH and HTTP tunnel configuration (optional)
 
-TODO: Document how to configure VPS and Pi for [reverse ssh tunnel](https://www.jeffgeerling.com/blog/2022/ssh-and-http-raspberry-pi-behind-cg-nat). And mention you should then be able to access node 1, at least, via `ssh -p 2222 pi@[my-vps-hostname]` from anywhere. Also note the importance of securing your infrastructure, and that you should probably lock down the configuration more if running this in production.
+For my own experimentation, I decided to run my Pi cluster 'off-grid', using a 4G LTE modem, as mentioned above.
+
+Because my mobile network provider uses CG-NAT, there is no way to remotely access the cluster, or serve web traffic to the public internet from it, at least not out of the box.
+
+I am using a reverse SSH tunnel to enable direct remote SSH and HTTP access. To set that up, I configured a VPS I run to use TCP Forwarding (see [this blog post for details](https://www.jeffgeerling.com/blog/2022/ssh-and-http-raspberry-pi-behind-cg-nat)), and I configured an SSH key so node 1 could connect to my VPS (e.g. `ssh my-vps-username@my-vps-hostname-or-ip`).
+
+Then I set the `reverse_tunnel_enable` variable to `true` in my `config.yml`, and configured the VPS username and hostname options.
+
+Doing that and running the `main.yml` playbook configures `autossh` on node 1, and will try to get a connection through to the VPS on ports 2222 (to node 1's port 22) and 8080 (to node 1's port 80).
+
+After that's done, you should be able to log into the cluster _through_ your VPS with a command like:
+
+```
+$ ssh -p 2222 pi@[my-vps-hostname]
+```
 
 > Note: If autossh isn't working, it could be that it didn't exit cleanly, and a tunnel is still reserving the port on the remote VPS. That's often the case if you run `sudo systemctl status autossh` and see messages like `Warning: remote port forwarding failed for listen port 2222`.
 >
 > In that case, log into the remote VPS and run `pgrep ssh | xargs kill` to kill off all active SSH sessions, then `autossh` should pick back up again.
+
+> Warning: Use this feature at your own risk. Security is your own responsibility, and for better protection, you should probably avoid directly exposing your cluster (e.g. by disabling the `GatewayPorts` option) so you can only access the cluster while already logged into your VPS).
 
 ### Cluster configuration and K3s installation
 

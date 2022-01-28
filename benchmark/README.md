@@ -6,13 +6,11 @@ I wanted to see where my various Pi clusters would rank, historically, so I buil
 
 ## Usage
 
-Make sure you have Ansible installed, then run the benchmarking playbook inside this directory:
+Make sure you have Ansible installed, and make sure you've at _least_ run the `networking.yml` playbook in the main directory. Then run the benchmarking playbook inside this directory:
 
 ```
 ansible-playbook main.yml
 ```
-
-After it's done, you may also need to add all the IP to hostname mappings to each of the nodes' `/etc/hosts` files (otherwise the HPL benchmark may hang).
 
 You should be able to log directly into any of the nodes (I did my tests on node 1), and run the following commands to kick off a benchmarking run:
 
