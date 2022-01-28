@@ -46,7 +46,7 @@ It should respond with a 'SUCCESS' message for each node.
 
 ### Storage Configuration
 
-**Warning**: This playbook is configured to set up a ZFS mirror volume on node 3, with two drives connected to the built-in SATA ports on the Turing Pi 2.
+> **Warning**: This playbook is configured to set up a ZFS mirror volume on node 3, with two drives connected to the built-in SATA ports on the Turing Pi 2.
 
 To disable this behavior, you can set `storage_configure: false` in `config.yml`.
 
@@ -117,7 +117,7 @@ $ ssh -p 2222 pi@[my-vps-hostname]
 >
 > In that case, log into the remote VPS and run `pgrep ssh | xargs kill` to kill off all active SSH sessions, then `autossh` should pick back up again.
 
-> Warning: Use this feature at your own risk. Security is your own responsibility, and for better protection, you should probably avoid directly exposing your cluster (e.g. by disabling the `GatewayPorts` option) so you can only access the cluster while already logged into your VPS).
+> **Warning**: Use this feature at your own risk. Security is your own responsibility, and for better protection, you should probably avoid directly exposing your cluster (e.g. by disabling the `GatewayPorts` option) so you can only access the cluster while already logged into your VPS).
 
 ### Cluster configuration and K3s installation
 
