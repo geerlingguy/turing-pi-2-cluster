@@ -8,3 +8,11 @@ reverse_tunnel_vps_hostname: my-vps-hostname
 storage_configure: true
 storage_pool_name: zfsdata
 storage_nfs_share_name: nfsshare
+
+drupal_image: drupal:9.3-apache
+drupal_hash_salt: OTk4MTYzYWI4N2E2MGIxNjlmYmQ2MTA4
+drupal_trusted_host_patterns: '^.+$'
+drupal_database_password: 'drupal'
+drupal_base_web_path: '/var/www/html/sites/default/'
+drupal_config_sync_directory: 'sites/default/files/config_OTk4MTYzY'
+drupal_extra_settings_php: ''

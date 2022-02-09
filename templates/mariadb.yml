@@ -39,7 +39,7 @@ spec:
             - name: MARIADB_USER
               value: drupal
             - name: MARIADB_PASSWORD
-              value: drupal
+              value: '{{ drupal_database_password }}'
             - name: MARIADB_RANDOM_ROOT_PASSWORD
               value: 'yes'
           volumeMounts:
