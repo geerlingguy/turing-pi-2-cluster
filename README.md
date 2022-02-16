@@ -165,7 +165,7 @@ The safest way to shut down the cluster is to run the following command:
 ansible all -B 500 -P 0 -a "shutdown now" -b
 ```
 
-> Note: If using the SSH tunnel, you might want to run the command _first_ on nodes 2-4, _then_ on node 1. So first run `ansible 'all:!control_plane' [...]`, then run it again just for `control_plane`.
+> Note: If using the SSH tunnel, you might want to run the command _first_ on worker nodes 2-4, _then_ on node 1. So first run `ansible 'all:!control_plane' [...]`, then run it again just for `control_plane`.
 
 Then after you confirm the nodes are shut down (with K3s running, it can take a few minutes), press the 'STM32_POWER' button or a power button attached to the front panel connector to power down all the slots physically. Then you can switch off or disconnect your ATX power supply.
 

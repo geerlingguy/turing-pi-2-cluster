@@ -88,8 +88,8 @@
       become: true
 
 
-- name: Configure the nodes (nodes 2-4).
-  hosts: nodes
+- name: Configure the worker nodes (nodes 2-4).
+  hosts: workers
   gather_facts: false
   become: true
 
@@ -97,7 +97,7 @@
     - config.yml
 
   tasks:
-    - name: Install K3s on nodes (takes a while).
+    - name: Install K3s on worker nodes (takes a while).
       ansible.builtin.shell: >-
         K3S_URL=https://"{{ groups['control_plane'][0] }}":6443
         K3S_TOKEN="{{ hostvars[groups['control_plane'][0]]['node_token'] }}"
