@@ -1,5 +1,7 @@
 # Turing Pi 2 Cluster
 
+DEPRECATED: Please see my [pi-cluster](https://github.com/geerlingguy/pi-cluster) project for active development.
+
 [![CI](https://github.com/geerlingguy/turing-pi-2-cluster/workflows/CI/badge.svg?branch=master&event=push)](https://github.com/geerlingguy/turing-pi-2-cluster/actions?query=workflow%3ACI)
 
 <p align="center"><a href="https://www.youtube.com/watch?v=kgVz4-SEhbE"><img src="images/turing-pi-2-hero.jpg?raw=true" width="500" height="auto" alt="Turing Pi 2 - Raspberry Pi Compute Module Cluster" /></a></p>
